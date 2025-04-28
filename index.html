@@ -236,12 +236,19 @@
         checkbox.type = 'checkbox';
         checkbox.disabled = ep.skip;
         checkbox.className = ep.skip ? 'pulado' : '';
+        checkbox.id = `${arc.name}-ep-${ep.number}`;  // ID único para cada checkbox
         if (ep.skip) checkbox.checked = true;
         const label = document.createElement('label');
         label.textContent = `Episódio ${ep.number}${ep.skip ? " (Pulado)" : ""}`;
         epDiv.appendChild(checkbox);
         epDiv.appendChild(label);
         episodesDiv.appendChild(epDiv);
+
+        // Carregar o estado das checkboxes
+        checkbox.checked = loadCheckboxState(checkbox.id);
+
+        // Salvar o estado das checkboxes
+        checkbox.addEventListener('change', () => saveCheckboxState(checkbox.id, checkbox.checked));
       });
 
       header.addEventListener('click', () => {
@@ -258,7 +265,7 @@
         e.stopPropagation();
         const checkboxes = episodesDiv.querySelectorAll('input[type="checkbox"]:not(:disabled)');
         const allChecked = Array.from(checkboxes).every(c => c.checked);
-        
+
         if (allChecked) {
           checkboxes.forEach(c => c.checked = false);
         } else {
@@ -276,17 +283,30 @@
       updateMarkAllButtonText(header.querySelector('.mark-all'), episodesDiv);
     }
 
-    function updateProgress(arcDiv) {
-      const checkboxes = arcDiv.querySelectorAll('input[type="checkbox"]:not(.pulado)');
-      const checked = arcDiv.querySelectorAll('input[type="checkbox"]:not(.pulado):checked');
-      const percentage = (checked.length / checkboxes.length) * 100;
-      arcDiv.querySelector('.progress').style.width = `${percentage}%`;
+    function saveCheckboxState(id, checked) {
+      localStorage.setItem(id, checked ? 'true' : 'false');
+      updateProgress();
+    }
 
-      if (percentage === 100) {
-        arcDiv.classList.add('completed');
-      } else {
-        arcDiv.classList.remove('completed');
-      }
+    function loadCheckboxState(id) {
+      return localStorage.getItem(id) === 'true';
+    }
+
+    function updateProgress() {
+      const allCheckboxes = document.querySelectorAll('input[type="checkbox"]:not(.pulado)');
+      allCheckboxes.forEach(checkbox => {
+        const arcDiv = checkbox.closest('.arc');
+        const checkboxes = arcDiv.querySelectorAll('input[type="checkbox"]:not(.pulado)');
+        const checked = arcDiv.querySelectorAll('input[type="checkbox"]:checked');
+        const percentage = (checked.length / checkboxes.length) * 100;
+        arcDiv.querySelector('.progress').style.width = `${percentage}%`;
+
+        if (percentage === 100) {
+          arcDiv.classList.add('completed');
+        } else {
+          arcDiv.classList.remove('completed');
+        }
+      });
     }
 
     function updateMarkAllButtonText(button, episodesDiv) {
@@ -298,10 +318,6 @@
       } else {
         button.textContent = 'Marcar tudo';
       }
-    }
-
-    function updateAllProgress() {
-      document.querySelectorAll('.arc').forEach(updateProgress);
     }
 
     function toggleDarkMode() {
@@ -317,7 +333,8 @@
 
     arcs.forEach(createArc);
     loadTheme();
-    setInterval(updateAllProgress, 500);
+    setInterval(updateProgress, 500);
   </script>
 </body>
 </html>
+
