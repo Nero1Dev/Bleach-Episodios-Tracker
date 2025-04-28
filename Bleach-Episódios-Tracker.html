@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bleach Episódios Tracker</title>
+  <style>
+    body {
+      user-select: none;
+      -webkit-user-select: none; /* Chrome, Safari */
+      -moz-user-select: none;    /* Firefox */
+      -ms-user-select: none;     /* Internet Explorer/Edge */
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      color: #333;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .dark-mode {
+      background-color: #121212;
+      color: #f0f0f0;
+    }
+    header {
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .dark-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: 2px solid #555;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s, color 0.3s;
+    }
+    .dark-mode .dark-toggle {
+      border-color: #aaa;
+      color: #f0f0f0;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .arc {
+      background: #fff;
+      margin-bottom: 20px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: background 0.3s;
+    }
+    .dark-mode .arc {
+      background: #1e1e1e;
+      box-shadow: 0 2px 6px rgba(255,255,255,0.1);
+    }
+    .arc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .arc-header h2 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      background: #ddd;
+      border-radius: 5px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    .progress {
+      height: 100%;
+      background: #3498db;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .episodes {
+      display: none;
+      margin-top: 10px;
+    }
+    .episode {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    input[type="checkbox"] {
+      margin-right: 8px;
+      width: 18px;
+      height: 18px;
+      accent-color: #3498db;
+    }
+    input[type="checkbox"].pulado {
+      accent-color: gray;
+      cursor: not-allowed;
+    }
+    .dark-mode input[type="checkbox"] {
+      accent-color: #82c7ff;
+    }
+    button.mark-all {
+      padding: 5px 10px;
+      font-size: 0.9rem;
+      background: #3498db;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button.mark-all:hover {
+      background: #217dbb;
+    }
+    .arc.completed {
+      background: #c8e6c9;
+    }
+    .dark-mode .arc.completed {
+      background: #2e7d32;
+    }
+    @media (max-width: 600px) {
+      header {
+        font-size: 1.2rem;
+      }
+      .dark-toggle {
+        top: 10px;
+        right: 10px;
+        padding: 6px 10px;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="dark-toggle" onclick="toggleDarkMode()">🌙</button>
+  <header>Bleach Episódios Tracker</header>
+  <div class="container" id="container"></div>
+
+  <script>
+    const generateRange = (start, end, skip = []) => {
+      const episodes = [];
+      for (let i = start; i <= end; i++) {
+        episodes.push({ number: i, skip: skip.includes(i) });
+      }
+      return episodes;
+    };
+
+    const arcs = [
+      {
+        name: "Arco da Sociedade das Almas",
+        episodes: [
+          ...generateRange(1, 32),
+          { number: 33, skip: true },
+          ...generateRange(34, 49),
+          { number: 50, skip: true },
+          ...generateRange(51, 63),
+          ...Array.from({ length: 46 }, (_, i) => ({ number: 64 + i, skip: true }))  // Episódios 64-109 pulados
+        ]
+      },
+      {
+        name: "Arco Hueco Mundo",
+        episodes: [
+          ...generateRange(110, 127),
+          ...Array.from({ length: 10 }, (_, i) => ({ number: 128 + i, skip: true })),  // Episódios 128-137 pulados
+          ...generateRange(138, 167),
+          ...Array.from({ length: 22 }, (_, i) => ({ number: 168 + i, skip: true })),  // Episódios 168-189 pulados
+          ...generateRange(190, 203),
+          { number: 204, skip: true },
+          { number: 205, skip: true },
+          ...generateRange(206, 212),
+          { number: 213, skip: true },
+          { number: 214, skip: true }
+        ]
+      },
+      {
+        name: "Arco da Falsa Karakura Town",
+        episodes: [
+          ...generateRange(215, 226),
+          ...Array.from({ length: 40 }, (_, i) => ({ number: 227 + i, skip: true })),  // Episódios 227-266 pulados
+          ...generateRange(267, 286),
+          { number: 287, skip: true },
+          ...generateRange(288, 297),
+          { number: 298, skip: true },
+          { number: 299, skip: true },
+          ...generateRange(300, 302),
+          { number: 303, skip: true },
+          { number: 304, skip: true },
+          { number: 305, skip: true },
+          ...generateRange(306, 310),
+          ...generateRange(311, 341, Array.from({ length: 31 }, (_, i) => 311 + i))  // Episódios 311-341 pulados
+        ]
+      },
+      {
+        name: "Arco do Desaparecimento do Substituto Shinigami",
+        episodes: [
+          ...generateRange(342, 354),
+          { number: 355, skip: true },
+          { number: 356, skip: false }
+        ]
+      },
+      {
+        name: "Arco da Guerra de Sangue de Mil Anos",
+        episodes: [
+          ...generateRange(356, 366)
+        ]
+      }
+    ];
+
+    function createArc(arc) {
+      const arcDiv = document.createElement('div');
+      arcDiv.className = 'arc';
+
+      const header = document.createElement('div');
+      header.className = 'arc-header';
+      header.innerHTML = `<h2>${arc.name}</h2><button class="mark-all">Marcar tudo</button>`;
+
+      const progressContainer = document.createElement('div');
+      progressContainer.className = 'progress-bar';
+      const progress = document.createElement('div');
+      progress.className = 'progress';
+      progressContainer.appendChild(progress);
+
+      const episodesDiv = document.createElement('div');
+      episodesDiv.className = 'episodes';
+
+      arc.episodes.forEach(ep => {
+        const epDiv = document.createElement('div');
+        epDiv.className = 'episode';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.disabled = ep.skip;
+        checkbox.className = ep.skip ? 'pulado' : '';
+        if (ep.skip) checkbox.checked = true;
+        const label = document.createElement('label');
+        label.textContent = `Episódio ${ep.number}${ep.skip ? " (Pulado)" : ""}`;
+        epDiv.appendChild(checkbox);
+        epDiv.appendChild(label);
+        episodesDiv.appendChild(epDiv);
+      });
+
+      header.addEventListener('click', () => {
+        const isOpen = episodesDiv.style.display === 'block';
+        document.querySelectorAll('.episodes').forEach(ep => {
+          ep.style.display = 'none'; // Fecha todos
+        });
+        if (!isOpen) {
+          episodesDiv.style.display = 'block'; // Só abre se estava fechado
+        }
+      });
+
+      header.querySelector('.mark-all').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const checkboxes = episodesDiv.querySelectorAll('input[type="checkbox"]:not(:disabled)');
+        const allChecked = Array.from(checkboxes).every(c => c.checked);
+        
+        if (allChecked) {
+          checkboxes.forEach(c => c.checked = false);
+        } else {
+          checkboxes.forEach(c => c.checked = true);
+        }
+        updateProgress(arcDiv);
+        updateMarkAllButtonText(header.querySelector('.mark-all'), episodesDiv);
+      });
+
+      arcDiv.appendChild(header);
+      arcDiv.appendChild(progressContainer);
+      arcDiv.appendChild(episodesDiv);
+      document.getElementById('container').appendChild(arcDiv);
+
+      updateMarkAllButtonText(header.querySelector('.mark-all'), episodesDiv);
+    }
+
+    function updateProgress(arcDiv) {
+      const checkboxes = arcDiv.querySelectorAll('input[type="checkbox"]:not(.pulado)');
+      const checked = arcDiv.querySelectorAll('input[type="checkbox"]:not(.pulado):checked');
+      const percentage = (checked.length / checkboxes.length) * 100;
+      arcDiv.querySelector('.progress').style.width = `${percentage}%`;
+
+      if (percentage === 100) {
+        arcDiv.classList.add('completed');
+      } else {
+        arcDiv.classList.remove('completed');
+      }
+    }
+
+    function updateMarkAllButtonText(button, episodesDiv) {
+      const checkboxes = episodesDiv.querySelectorAll('input[type="checkbox"]:not(:disabled)');
+      const allChecked = Array.from(checkboxes).every(c => c.checked);
+
+      if (allChecked) {
+        button.textContent = 'Desmarcar tudo';
+      } else {
+        button.textContent = 'Marcar tudo';
+      }
+    }
+
+    function updateAllProgress() {
+      document.querySelectorAll('.arc').forEach(updateProgress);
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+
+    function loadTheme() {
+      if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+      }
+    }
+
+    arcs.forEach(createArc);
+    loadTheme();
+    setInterval(updateAllProgress, 500);
+  </script>
+</body>
+</html>
