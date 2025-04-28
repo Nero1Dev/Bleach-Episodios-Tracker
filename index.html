@@ -153,9 +153,15 @@
 
     const arcs = [
       {
+        name: "Arco do Substituto"
+        episodes: [
+        ...generateRange(1, 20)
+        ]
+      },
+      {
         name: "Arco da Sociedade das Almas",
         episodes: [
-          ...generateRange(1, 32),
+          ...generateRange(21, 32),
           { number: 33, skip: true },
           ...generateRange(34, 49),
           { number: 50, skip: true },
