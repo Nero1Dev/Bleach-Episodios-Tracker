@@ -182,7 +182,7 @@
         checkbox.id = `${arc.name}-ep-${ep.number}`;
         checkbox.checked = loadCheckboxState(checkbox.id) || ep.skip;
         const label = document.createElement('label');
-        label.textContent = `Episódio ${ep.number}${ep.skip ? " (Pulado)" : ""}`;
+        label.textContent = `Episódio ${ep.number}${ep.skip ? " (Filler)" : ""}`;
         epDiv.appendChild(checkbox);
         epDiv.appendChild(label);
         episodesDiv.appendChild(epDiv);
