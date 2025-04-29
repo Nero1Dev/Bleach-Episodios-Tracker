@@ -7,9 +7,6 @@
   <style>
     body {
       user-select: none;
-      -webkit-user-select: none; /* Chrome, Safari */
-      -moz-user-select: none;    /* Firefox */
-      -ms-user-select: none;     /* Internet Explorer/Edge */
       margin: 0;
       font-family: Arial, sans-serif;
       background-color: #f0f0f0;
@@ -36,7 +33,6 @@
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
-      transition: background 0.3s, color 0.3s;
     }
     .dark-mode .dark-toggle {
       border-color: #aaa;
@@ -57,7 +53,6 @@
     }
     .dark-mode .arc {
       background: #1e1e1e;
-      box-shadow: 0 2px 6px rgba(255,255,255,0.1);
     }
     .arc-header {
       display: flex;
@@ -82,6 +77,9 @@
       background: #3498db;
       width: 0%;
       transition: width 0.3s;
+    }
+    .progress.filler {
+      background: gold;
     }
     .episodes {
       display: none;
@@ -113,7 +111,6 @@
       border-radius: 8px;
       color: white;
       cursor: pointer;
-      transition: background 0.3s;
     }
     button.mark-all:hover {
       background: #217dbb;
@@ -124,17 +121,6 @@
     .dark-mode .arc.completed {
       background: #2e7d32;
     }
-    @media (max-width: 600px) {
-      header {
-        font-size: 1.2rem;
-      }
-      .dark-toggle {
-        top: 10px;
-        right: 10px;
-        padding: 6px 10px;
-        font-size: 0.8rem;
-      }
-    }
   </style>
 </head>
 <body>
@@ -143,79 +129,30 @@
   <div class="container" id="container"></div>
 
   <script>
-    const generateRange = (start, end, skip = []) => {
-      const episodes = [];
-      for (let i = start; i <= end; i++) {
-        episodes.push({ number: i, skip: skip.includes(i) });
-      }
-      return episodes;
-    };
+    const generateRange = (start, end, skip = []) =>
+      Array.from({ length: end - start + 1 }, (_, i) => {
+        const ep = start + i;
+        return { number: ep, skip: skip.includes(ep) };
+      });
 
     const arcs = [
-      {
-        name: "Arco do Substituto",
-        episodes: [
-        ...generateRange(1, 20)
-        ]
-      },
-      {
-        name: "Arco da Sociedade das Almas",
-        episodes: [
-          ...generateRange(21, 32),
-          { number: 33, skip: true },
-          ...generateRange(34, 49),
-          { number: 50, skip: true },
-          ...generateRange(51, 63),
-          ...Array.from({ length: 46 }, (_, i) => ({ number: 64 + i, skip: true }))  // Episódios 64-109 pulados
-        ]
-      },
-      {
-        name: "Arco Hueco Mundo",
-        episodes: [
-          ...generateRange(110, 127),
-          ...Array.from({ length: 10 }, (_, i) => ({ number: 128 + i, skip: true })),  // Episódios 128-137 pulados
-          ...generateRange(138, 167),
-          ...Array.from({ length: 22 }, (_, i) => ({ number: 168 + i, skip: true })),  // Episódios 168-189 pulados
-          ...generateRange(190, 203),
-          { number: 204, skip: true },
-          { number: 205, skip: true },
-          ...generateRange(206, 212),
-          { number: 213, skip: true },
-          { number: 214, skip: true }
-        ]
-      },
-      {
-        name: "Arco da Falsa Karakura Town",
-        episodes: [
-          ...generateRange(215, 226),
-          ...Array.from({ length: 40 }, (_, i) => ({ number: 227 + i, skip: true })),  // Episódios 227-266 pulados
-          ...generateRange(267, 286),
-          { number: 287, skip: true },
-          ...generateRange(288, 297),
-          { number: 298, skip: true },
-          { number: 299, skip: true },
-          ...generateRange(300, 302),
-          { number: 303, skip: true },
-          { number: 304, skip: true },
-          { number: 305, skip: true },
-          ...generateRange(306, 310),
-          ...generateRange(311, 341, Array.from({ length: 31 }, (_, i) => 311 + i))  // Episódios 311-341 pulados
-        ]
-      },
-      {
-        name: "Arco do Desaparecimento do Substituto Shinigami",
-        episodes: [
-          ...generateRange(342, 354),
-          { number: 355, skip: true },
-          { number: 356, skip: false }
-        ]
-      },
-      {
-        name: "Arco da Guerra de Sangue de Mil Anos",
-        episodes: [
-          ...generateRange(356, 366)
-        ]
-      }
+      { name: "O Substituto", episodes: generateRange(1, 20) },
+      { name: "Sociedade das Almas: A Entrada", episodes: generateRange(21, 41, [32, 33]) },
+      { name: "Sociedade das Almas: O Resgate", episodes: generateRange(42, 63, [50]) },
+      { name: "Os Bounts", episodes: generateRange(64, 91, Array.from({ length: 28 }, (_, i) => 64 + i)) },
+      { name: "O Ataque dos Bounts à Sociedade das Almas", episodes: generateRange(92, 108, Array.from({ length: 16 }, (_, i) => 92 + i)) },
+      { name: "Arrankar: A Chegada", episodes: generateRange(110, 131, [119, 128, 129, 130, 131]) },
+      { name: "Arrankar: Entrada Sorrateira no Hueco Mundo", episodes: generateRange(132, 151, [132,133,134,135,136,137,147,148,149]) },
+      { name: "Arrankar: A Luta Feroz", episodes: generateRange(152, 167) },
+      { name: "O Novo Capitão Amagai Shūsuke", episodes: generateRange(168, 189, Array.from({ length: 22 }, (_, i) => 168 + i)) },
+      { name: "Arrankar vs Shinigami", episodes: generateRange(190, 205, [204, 205]) },
+      { name: "O Passado", episodes: generateRange(206, 212, [206, 207]) },
+      { name: "Arrankar: A Falsa Cidade de Karakura", episodes: generateRange(213, 229, [213,214,228,229]) },
+      { name: "Conto da Zanpakutō Desconhecida", episodes: generateRange(230, 265, Array.from({ length: 36 }, (_, i) => 230 + i)) },
+      { name: "Arrankar: A Queda", episodes: generateRange(266, 316, [284,287,298,299,303,304,305,311,312,313,314,315,316]) },
+      { name: "Exército de Invasão das 13 Divisões", episodes: generateRange(317, 342, Array.from({ length: 25 }, (_, i) => 317 + i).concat(342)) },
+      { name: "Shinigami Substituto Desaparecido", episodes: generateRange(343, 366, [347,351,355,357]) },
+      { name: "Thousand-Year Blood War", episodes: generateRange(367, 394, [373, 384]) },
     ];
 
     function createArc(arc) {
@@ -242,42 +179,28 @@
         checkbox.type = 'checkbox';
         checkbox.disabled = ep.skip;
         checkbox.className = ep.skip ? 'pulado' : '';
-        checkbox.id = `${arc.name}-ep-${ep.number}`;  // ID único para cada checkbox
-        if (ep.skip) checkbox.checked = true;
+        checkbox.id = `${arc.name}-ep-${ep.number}`;
+        checkbox.checked = loadCheckboxState(checkbox.id) || ep.skip;
         const label = document.createElement('label');
         label.textContent = `Episódio ${ep.number}${ep.skip ? " (Pulado)" : ""}`;
         epDiv.appendChild(checkbox);
         epDiv.appendChild(label);
         episodesDiv.appendChild(epDiv);
-
-        // Carregar o estado das checkboxes
-        checkbox.checked = loadCheckboxState(checkbox.id);
-
-        // Salvar o estado das checkboxes
         checkbox.addEventListener('change', () => saveCheckboxState(checkbox.id, checkbox.checked));
       });
 
       header.addEventListener('click', () => {
         const isOpen = episodesDiv.style.display === 'block';
-        document.querySelectorAll('.episodes').forEach(ep => {
-          ep.style.display = 'none'; // Fecha todos
-        });
-        if (!isOpen) {
-          episodesDiv.style.display = 'block'; // Só abre se estava fechado
-        }
+        document.querySelectorAll('.episodes').forEach(e => e.style.display = 'none');
+        if (!isOpen) episodesDiv.style.display = 'block';
       });
 
       header.querySelector('.mark-all').addEventListener('click', (e) => {
         e.stopPropagation();
         const checkboxes = episodesDiv.querySelectorAll('input[type="checkbox"]:not(:disabled)');
         const allChecked = Array.from(checkboxes).every(c => c.checked);
-
-        if (allChecked) {
-          checkboxes.forEach(c => c.checked = false);
-        } else {
-          checkboxes.forEach(c => c.checked = true);
-        }
-        updateProgress(arcDiv);
+        checkboxes.forEach(c => c.checked = !allChecked);
+        updateProgress();
         updateMarkAllButtonText(header.querySelector('.mark-all'), episodesDiv);
       });
 
@@ -285,7 +208,6 @@
       arcDiv.appendChild(progressContainer);
       arcDiv.appendChild(episodesDiv);
       document.getElementById('container').appendChild(arcDiv);
-
       updateMarkAllButtonText(header.querySelector('.mark-all'), episodesDiv);
     }
 
@@ -299,18 +221,22 @@
     }
 
     function updateProgress() {
-      const allCheckboxes = document.querySelectorAll('input[type="checkbox"]:not(.pulado)');
-      allCheckboxes.forEach(checkbox => {
-        const arcDiv = checkbox.closest('.arc');
-        const checkboxes = arcDiv.querySelectorAll('input[type="checkbox"]:not(.pulado)');
-        const checked = arcDiv.querySelectorAll('input[type="checkbox"]:checked');
-        const percentage = (checked.length / checkboxes.length) * 100;
-        arcDiv.querySelector('.progress').style.width = `${percentage}%`;
+      document.querySelectorAll('.arc').forEach(arcDiv => {
+        const checkboxes = arcDiv.querySelectorAll('input[type="checkbox"]');
+        const nonSkipped = arcDiv.querySelectorAll('input[type="checkbox"]:not(.pulado)');
+        const checked = arcDiv.querySelectorAll('input[type="checkbox"]:checked:not(.pulado)');
+        const allSkipped = Array.from(checkboxes).every(c => c.disabled);
+        const progressEl = arcDiv.querySelector('.progress');
 
-        if (percentage === 100) {
+        if (allSkipped) {
+          progressEl.style.width = '100%';
+          progressEl.classList.add('filler');
           arcDiv.classList.add('completed');
         } else {
-          arcDiv.classList.remove('completed');
+          const percentage = (checked.length / nonSkipped.length) * 100;
+          progressEl.style.width = `${percentage}%`;
+          progressEl.classList.remove('filler');
+          arcDiv.classList.toggle('completed', percentage === 100);
         }
       });
     }
@@ -318,12 +244,7 @@
     function updateMarkAllButtonText(button, episodesDiv) {
       const checkboxes = episodesDiv.querySelectorAll('input[type="checkbox"]:not(:disabled)');
       const allChecked = Array.from(checkboxes).every(c => c.checked);
-
-      if (allChecked) {
-        button.textContent = 'Desmarcar tudo';
-      } else {
-        button.textContent = 'Marcar tudo';
-      }
+      button.textContent = allChecked ? 'Desmarcar tudo' : 'Marcar tudo';
     }
 
     function toggleDarkMode() {
@@ -343,4 +264,3 @@
   </script>
 </body>
 </html>
-
