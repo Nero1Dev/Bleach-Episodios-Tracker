@@ -1,265 +1,402 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bleach Episódios Tracker</title>
-  <style>
-    body {
-      user-select: none;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      color: #333;
-      transition: background-color 0.3s, color 0.3s;
-    }
-    .dark-mode {
-      background-color: #121212;
-      color: #f0f0f0;
-    }
-    header {
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-    .dark-toggle {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: none;
-      border: 2px solid #555;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .dark-mode .dark-toggle {
-      border-color: #aaa;
-      color: #f0f0f0;
-    }
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .arc {
-      background: #fff;
-      margin-bottom: 20px;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      transition: background 0.3s;
-    }
-    .dark-mode .arc {
-      background: #1e1e1e;
-    }
-    .arc-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-    }
-    .arc-header h2 {
-      margin: 0;
-      font-size: 1.2rem;
-    }
-    .progress-bar {
-      width: 100%;
-      height: 10px;
-      background: #ddd;
-      border-radius: 5px;
-      margin: 10px 0;
-      overflow: hidden;
-    }
-    .progress {
-      height: 100%;
-      background: #3498db;
-      width: 0%;
-      transition: width 0.3s;
-    }
-    .progress.filler {
-      background: gold;
-    }
-    .episodes {
-      display: none;
-      margin-top: 10px;
-    }
-    .episode {
-      display: flex;
-      align-items: center;
-      margin-bottom: 5px;
-    }
-    input[type="checkbox"] {
-      margin-right: 8px;
-      width: 18px;
-      height: 18px;
-      accent-color: #3498db;
-    }
-    input[type="checkbox"].pulado {
-      accent-color: gray;
-      cursor: not-allowed;
-    }
-    .dark-mode input[type="checkbox"] {
-      accent-color: #82c7ff;
-    }
-    button.mark-all {
-      padding: 5px 10px;
-      font-size: 0.9rem;
-      background: #3498db;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      cursor: pointer;
-    }
-    button.mark-all:hover {
-      background: #217dbb;
-    }
-    .arc.completed {
-      background: #c8e6c9;
-    }
-    .dark-mode .arc.completed {
-      background: #2e7d32;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bleach · Registro de Episódios</title>
+<meta name="description" content="Acompanhe os 366 episódios de Bleach e o Guerra Sangrenta de Mil Anos, com canon, misto e filler separados.">
+<meta name="theme-color" content="#0b0b0c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0b0c; --paper: #141416; --raised: #1b1b1e; --line: #2a2a2e;
+    --ink: #eeeae2; --dim: #8d8a84; --faint: #4a4844;
+    --red: #d6283a; --red-soft: rgba(214, 40, 58, .14);
+    --canon: #eeeae2; --mixed: #b9a37a; --filler: #4a4844;
+    --serif: 'Shippori Mincho B1', 'Noto Serif JP', Georgia, serif;
+    --sans: 'Zen Kaku Gothic New', system-ui, sans-serif;
+  }
+  :root[data-theme="light"] {
+    --bg: #f3efe6; --paper: #fbf8f1; --raised: #ffffff; --line: #ddd6c8;
+    --ink: #17161a; --dim: #6f6a61; --faint: #bdb5a6;
+    --red: #b8162a; --red-soft: rgba(184, 22, 42, .10);
+    --canon: #17161a; --mixed: #8a6f3e; --filler: #c9c1b2;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 var(--sans); min-height: 100vh;
+    background-image: radial-gradient(circle at 85% -10%, var(--red-soft), transparent 45%);
+    background-attachment: fixed;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 20px 80px; }
+
+  /* topo */
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: .18em; font-size: 12px; color: var(--dim); }
+  .seal { width: 30px; height: 30px; border-radius: 6px; background: var(--red); color: #fff; display: grid; place-items: center; font: 800 16px var(--serif); letter-spacing: 0; transform: rotate(-4deg); }
+  .tools { display: flex; gap: 6px; }
+  .icon-btn { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 13px; color: var(--dim); }
+  .icon-btn:hover { color: var(--ink); border-color: var(--faint); }
+
+  /* herói */
+  .hero { display: grid; grid-template-columns: 1fr auto; gap: 28px; align-items: end; padding: 28px 0 34px; border-bottom: 1px solid var(--line); }
+  .hero h1 { margin: 0; font: 800 clamp(56px, 13vw, 128px)/.86 var(--serif); letter-spacing: -.02em; }
+  .hero h1 span { color: var(--red); }
+  .hero .kana { font: 600 14px var(--serif); color: var(--dim); letter-spacing: .5em; margin: 14px 0 0; }
+  .ring { position: relative; width: 132px; height: 132px; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring circle { fill: none; stroke-width: 7; }
+  .ring .track { stroke: var(--line); }
+  .ring .fill { stroke: var(--red); stroke-linecap: round; transition: stroke-dashoffset .6s cubic-bezier(.2, .8, .2, 1); }
+  .ring .num { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+  .ring b { font: 800 30px/1 var(--serif); display: block; }
+  .ring small { font-size: 11px; color: var(--dim); letter-spacing: .12em; }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 26px 0; }
+  .stat { background: var(--paper); padding: 14px 16px; }
+  .stat small { display: block; font-size: 11px; letter-spacing: .14em; color: var(--dim); text-transform: uppercase; }
+  .stat b { font: 800 24px/1.3 var(--serif); }
+
+  /* próximo episódio */
+  .next { display: flex; align-items: center; gap: 18px; background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--red); border-radius: 12px; padding: 18px 20px; }
+  .next .ep { font: 800 44px/1 var(--serif); min-width: 2.4ch; }
+  .next .meta { flex: 1; min-width: 0; }
+  .next .meta small { color: var(--dim); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+  .next .meta div { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .btn-red { background: var(--red); color: #fff; border: 0; border-radius: 10px; padding: 11px 18px; font-weight: 700; white-space: nowrap; }
+  .btn-red:hover { filter: brightness(1.1); }
+  .btn-red:disabled { opacity: .4; cursor: default; }
+
+  /* filtros */
+  .bar { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; margin: 34px 0 14px; }
+  .seg { display: inline-flex; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+  .seg button { background: none; border: 0; border-radius: 7px; padding: 7px 12px; font-size: 13px; color: var(--dim); }
+  .seg button[aria-pressed="true"] { background: var(--raised); color: var(--ink); box-shadow: 0 1px 0 var(--line); }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--dim); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .k-canon { background: var(--canon); } .k-mixed { background: var(--mixed); } .k-filler { background: var(--filler); }
+
+  /* sagas e arcos */
+  .saga { margin-top: 30px; }
+  .saga > h2 { display: flex; align-items: baseline; gap: 12px; font: 800 22px var(--serif); margin: 0 0 12px; }
+  .saga > h2 small { font: 500 12px var(--sans); color: var(--dim); letter-spacing: .1em; }
+  .arc { border: 1px solid var(--line); border-radius: 12px; background: var(--paper); margin-bottom: 8px; overflow: hidden; }
+  .arc-head { display: grid; grid-template-columns: 34px 1fr auto; gap: 14px; align-items: center; width: 100%; background: none; border: 0; padding: 14px 16px; text-align: left; }
+  .arc-head .n { font: 800 15px var(--serif); color: var(--faint); }
+  .arc.done .arc-head .n { color: var(--red); }
+  .arc-head .t { font-weight: 700; }
+  .arc-head .r { font-size: 12px; color: var(--dim); }
+  .arc-head .p { font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; text-align: right; }
+  .meter { grid-column: 2 / 4; height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 0; background: var(--red); transition: width .4s; }
+  .arc.done .meter i { background: var(--ink); }
+  .arc.all-filler .arc-head .t::after { content: 'filler'; margin-left: 8px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; vertical-align: 2px; }
+  .arc-body { display: none; padding: 4px 16px 16px 64px; }
+  .arc.open .arc-body { display: block; }
+  .arc.skip { opacity: .5; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 6px; }
+  .e { position: relative; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--raised); font: 700 13px var(--sans); font-variant-numeric: tabular-nums; color: var(--dim); }
+  .e::before { content: ''; position: absolute; left: 6px; right: 6px; bottom: 4px; height: 2px; border-radius: 1px; background: var(--canon); }
+  .e.mixed::before { background: var(--mixed); }
+  .e.filler { border-style: dashed; color: var(--faint); }
+  .e.filler::before { background: var(--filler); }
+  .e.hide { display: none; }
+  .e[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .e[aria-pressed="true"]::before { background: var(--red); }
+  .e.soon { opacity: .45; }
+  .e:hover { border-color: var(--faint); }
+  .arc-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .ghost { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font-size: 12px; color: var(--dim); }
+  .ghost:hover { color: var(--ink); }
+  .hint { font-size: 12px; color: var(--dim); margin: 10px 0 0; }
+
+  footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 12px; color: var(--dim); display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; }
+  footer a { color: inherit; }
+
+  .toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 300%); visibility: hidden; background: var(--ink); color: var(--bg); border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 700; transition: transform .3s; display: flex; gap: 14px; align-items: center; }
+  .toast.show { transform: translate(-50%, 0); visibility: visible; }
+  .toast button { background: none; border: 0; color: var(--red); font-weight: 800; padding: 0; }
+
+  @media (max-width: 640px) {
+    .hero { grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+    .hero h1 { font-size: 12vw; }
+    .hero .kana { letter-spacing: .3em; }
+    .ring { width: 84px; height: 84px; }
+    .ring b { font-size: 22px; }
+    .ring small { font-size: 9px; }
+    .brand { font-size: 0; gap: 0; }
+    .stats b { font-size: 19px; }
+    .next { flex-wrap: wrap; }
+    .next .btn-red { width: 100%; }
+    .arc-body { padding-left: 16px; }
+    .arc-head { grid-template-columns: 26px 1fr auto; gap: 10px; }
+    .legend { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
 </head>
 <body>
-  <button class="dark-toggle" onclick="toggleDarkMode()">🌙</button>
-  <header>Bleach Episódios Tracker</header>
-  <div class="container" id="container"></div>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="seal">死</span>REGISTRO DE EPISÓDIOS</div>
+    <div class="tools">
+      <button class="icon-btn" id="export" title="Baixar backup do progresso">Backup</button>
+      <button class="icon-btn" id="import" title="Restaurar backup">Restaurar</button>
+      <button class="icon-btn" id="theme" title="Trocar tema" aria-label="Trocar tema">Tema</button>
+    </div>
+  </header>
 
-  <script>
-    const generateRange = (start, end, skip = []) =>
-      Array.from({ length: end - start + 1 }, (_, i) => {
-        const ep = start + i;
-        return { number: ep, skip: skip.includes(ep) };
-      });
+  <section class="hero">
+    <div>
+      <h1>BLEACH<span>.</span></h1>
+      <p class="kana">ブ リ ー チ</p>
+    </div>
+    <div class="ring" aria-hidden="true">
+      <svg viewBox="0 0 100 100"><circle class="track" cx="50" cy="50" r="44"/><circle class="fill" id="ring" cx="50" cy="50" r="44"/></svg>
+      <div class="num"><div><b id="pct">0%</b><small>DO MODO</small></div></div>
+    </div>
+  </section>
 
-    const arcs = [
-      { name: "O Substituto", episodes: generateRange(1, 20) },
-      { name: "Sociedade das Almas: A Entrada", episodes: generateRange(21, 41, [32, 33]) },
-      { name: "Sociedade das Almas: O Resgate", episodes: generateRange(42, 63, [50]) },
-      { name: "Os Bounts", episodes: generateRange(64, 91, Array.from({ length: 28 }, (_, i) => 64 + i)) },
-      { name: "O Ataque dos Bounts à Sociedade das Almas", episodes: generateRange(92, 108, Array.from({ length: 16 }, (_, i) => 92 + i)) },
-      { name: "Arrankar: A Chegada", episodes: generateRange(110, 131, [119, 128, 129, 130, 131]) },
-      { name: "Arrankar: Entrada Sorrateira no Hueco Mundo", episodes: generateRange(132, 151, [132,133,134,135,136,137,147,148,149]) },
-      { name: "Arrankar: A Luta Feroz", episodes: generateRange(152, 167) },
-      { name: "O Novo Capitão Amagai Shūsuke", episodes: generateRange(168, 189, Array.from({ length: 22 }, (_, i) => 168 + i)) },
-      { name: "Arrankar vs Shinigami", episodes: generateRange(190, 205, [204, 205]) },
-      { name: "O Passado", episodes: generateRange(206, 212, [206, 207]) },
-      { name: "Arrankar: A Falsa Cidade de Karakura", episodes: generateRange(213, 229, [213,214,228,229]) },
-      { name: "Conto da Zanpakutō Desconhecida", episodes: generateRange(230, 265, Array.from({ length: 36 }, (_, i) => 230 + i)) },
-      { name: "Arrankar: A Queda", episodes: generateRange(266, 316, [284,287,298,299,303,304,305,311,312,313,314,315,316]) },
-      { name: "Exército de Invasão das 13 Divisões", episodes: generateRange(317, 342, Array.from({ length: 25 }, (_, i) => 317 + i).concat(342)) },
-      { name: "Shinigami Substituto Desaparecido", episodes: generateRange(343, 366, [347,351,355,357]) },
-    ];
+  <div class="stats">
+    <div class="stat"><small>Assistidos</small><b id="s-seen">0</b></div>
+    <div class="stat"><small>Faltam</small><b id="s-left">0</b></div>
+    <div class="stat"><small>Tempo restante</small><b id="s-time">0h</b></div>
+  </div>
 
-    function createArc(arc) {
-      const arcDiv = document.createElement('div');
-      arcDiv.className = 'arc';
+  <div class="next" id="next">
+    <div class="ep" id="n-ep">1</div>
+    <div class="meta"><small id="n-label">Próximo episódio</small><div id="n-arc"></div></div>
+    <button class="btn-red" id="n-btn">Assisti ✓</button>
+  </div>
 
-      const header = document.createElement('div');
-      header.className = 'arc-header';
-      header.innerHTML = `<h2>${arc.name}</h2><button class="mark-all">Marcar tudo</button>`;
+  <div class="bar">
+    <div class="seg" role="group" aria-label="O que assistir">
+      <button data-mode="canon">Só canon</button>
+      <button data-mode="mixed">Canon + misto</button>
+      <button data-mode="all">Tudo</button>
+    </div>
+    <div class="legend"><span><i class="k-canon"></i>canon</span><span><i class="k-mixed"></i>misto</span><span><i class="k-filler"></i>filler</span></div>
+  </div>
 
-      const progressContainer = document.createElement('div');
-      progressContainer.className = 'progress-bar';
-      const progress = document.createElement('div');
-      progress.className = 'progress';
-      progressContainer.appendChild(progress);
+  <main id="list"></main>
 
-      const episodesDiv = document.createElement('div');
-      episodesDiv.className = 'episodes';
+  <footer>
+    <span>Progresso salvo só neste navegador. Use Backup para levar para outro aparelho.</span>
+    <span>Canon/filler: <a href="https://www.animefillerlist.com/shows/bleach" target="_blank" rel="noopener">animefillerlist</a></span>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status"><span id="toast-msg"></span><button id="toast-undo">Desfazer</button></div>
+<input type="file" id="file" accept="application/json" hidden>
 
-      arc.episodes.forEach(ep => {
-        const epDiv = document.createElement('div');
-        epDiv.className = 'episode';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.disabled = ep.skip;
-        checkbox.className = ep.skip ? 'pulado' : '';
-        checkbox.id = `${arc.name}-ep-${ep.number}`;
-        checkbox.checked = loadCheckboxState(checkbox.id) || ep.skip;
-        const label = document.createElement('label');
-        label.textContent = `Episódio ${ep.number}${ep.skip ? " (Filler)" : ""}`;
-        epDiv.appendChild(checkbox);
-        epDiv.appendChild(label);
-        episodesDiv.appendChild(epDiv);
-        checkbox.addEventListener('change', () => saveCheckboxState(checkbox.id, checkbox.checked));
-      });
+<script>
+/* ───── dados ───── */
+const spans = (s) => s.split(',').flatMap((p) => {
+  const [a, b = a] = p.split('-').map(Number)
+  return Array.from({ length: b - a + 1 }, (_, i) => a + i)
+})
+// fonte: animefillerlist.com (o que não é canon nem filler é misto)
+const CANON = new Set(spans('1-7,9-26,28-31,34-45,47-49,51-63,110,112-115,117-118,121-123,125-127,138-140,142,144-145,150-155,157-159,162-167,191-192,194-203,208,210-212,215-221,224-227,269-273,275,277-283,286,289,292-294,297,300-302,306-309,344,346,348-350,352-354,356,358-366'))
+const FILLER = new Set(spans('33,50,64-109,128-137,147-149,168-189,204-205,213-214,228-266,287,298-299,303-305,311-342,355'))
+const kindOf = (n) => CANON.has(n) ? 'canon' : FILLER.has(n) ? 'filler' : 'mixed'
 
-      header.addEventListener('click', () => {
-        const isOpen = episodesDiv.style.display === 'block';
-        document.querySelectorAll('.episodes').forEach(e => e.style.display = 'none');
-        if (!isOpen) episodesDiv.style.display = 'block';
-      });
+const SAGAS = [
+  { name: 'Bleach', sub: '2004–2012 · 366 episódios', arcs: [
+    ['O Shinigami Substituto', 1, 20], ['Sociedade das Almas: A Invasão', 21, 41], ['Sociedade das Almas: O Resgate', 42, 63],
+    ['Os Bounts', 64, 91], ['Os Bounts Atacam a Sociedade das Almas', 92, 109], ['Arrancar: A Chegada', 110, 131],
+    ['Arrancar: Invasão do Hueco Mundo', 132, 151], ['Arrancar: A Batalha Feroz', 152, 167], ['O Novo Capitão Amagai', 168, 189],
+    ['Arrancar vs. Shinigami', 190, 205], ['O Passado', 206, 212], ['Arrancar: A Batalha de Karakura', 213, 229],
+    ['Contos das Zanpakutō', 230, 265], ['Arrancar: A Queda', 266, 316], ['Exército Invasor do Gotei 13', 317, 342],
+    ['O Substituto Perdido', 343, 366],
+  ].map(([name, a, b]) => ({ name, eps: spans(`${a}-${b}`).map((n) => ({ id: String(n), n, kind: kindOf(n) })) })) },
+  { name: 'Guerra Sangrenta de Mil Anos', sub: '2022–2026 · 50 episódios', arcs: [
+    ['Guerra Sangrenta de Mil Anos', 1, 13], ['O Separado', 14, 26], ['O Conflito', 27, 40], ['A Calamidade', 41, 50],
+  ].map(([name, a, b]) => ({ name, eps: spans(`${a}-${b}`).map((n) => ({ id: 'g' + n, n, kind: 'canon', airs: n === 50 ? '2026-10-26' : null })) })) },
+]
+SAGAS.forEach((s) => s.arcs.forEach((a) => a.saga = s.name))
+const ARCS = SAGAS.flatMap((s) => s.arcs)
+const ALL = ARCS.flatMap((a) => a.eps.map((e) => ({ ...e, arc: a })))
+// self-check: a lista fecha
+console.assert(CANON.size + FILLER.size === 327 && ALL.length === 416 && ALL.filter((e) => !/^g/.test(e.id)).every((e, i) => e.n === i + 1), 'dados dos episódios não fecham')
 
-      header.querySelector('.mark-all').addEventListener('click', (e) => {
-        e.stopPropagation();
-        const checkboxes = episodesDiv.querySelectorAll('input[type="checkbox"]:not(:disabled)');
-        const allChecked = Array.from(checkboxes).every(c => c.checked);
-        checkboxes.forEach(c => c.checked = !allChecked);
-        updateProgress();
-        updateMarkAllButtonText(header.querySelector('.mark-all'), episodesDiv);
-      });
-
-      arcDiv.appendChild(header);
-      arcDiv.appendChild(progressContainer);
-      arcDiv.appendChild(episodesDiv);
-      document.getElementById('container').appendChild(arcDiv);
-      updateMarkAllButtonText(header.querySelector('.mark-all'), episodesDiv);
+/* ───── estado ───── */
+const KEY = 'bleach-registro-v2'
+const store = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d } catch { return d } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)) } catch {} },
+}
+let state = store.get(KEY, null)
+if (!state) {
+  // migra o progresso da versão antiga (chaves "<arco>-ep-<n>" = 'true')
+  const seen = []
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const m = localStorage.key(i).match(/-ep-(\d+)$/)
+      if (m && localStorage.getItem(localStorage.key(i)) === 'true') seen.push(m[1])
     }
+  } catch {}
+  state = { seen, mode: 'mixed', theme: store.get('theme', null) === 'light' ? 'light' : 'dark' }
+}
+const seen = new Set(state.seen)
+const save = () => store.set(KEY, { ...state, seen: [...seen] })
 
-    function saveCheckboxState(id, checked) {
-      localStorage.setItem(id, checked ? 'true' : 'false');
-      updateProgress();
+const MIN = 23
+const today = new Date().toISOString().slice(0, 10)
+const aired = (e) => !e.airs || e.airs <= today
+const inMode = (e) => state.mode === 'all' || e.kind === 'canon' || (state.mode === 'mixed' && e.kind === 'mixed')
+const label = (e) => (e.id[0] === 'g' ? 'GSMA ' : '') + e.n
+
+/* ───── tela ───── */
+const $ = (id) => document.getElementById(id)
+const list = $('list')
+const views = new Map()
+
+SAGAS.forEach((saga, si) => {
+  const sec = document.createElement('section')
+  sec.className = 'saga'
+  sec.innerHTML = `<h2>${saga.name}<small>${saga.sub}</small></h2>`
+  saga.arcs.forEach((arc, ai) => {
+    const el = document.createElement('div')
+    el.className = 'arc' + (arc.eps.every((e) => e.kind === 'filler') ? ' all-filler' : '')
+    const first = arc.eps[0].n, last = arc.eps.at(-1).n
+    el.innerHTML = `
+      <button class="arc-head" aria-expanded="false">
+        <span class="n">${String(ai + 1).padStart(2, '0')}</span>
+        <span><span class="t">${arc.name}</span><br><span class="r">ep. ${first}–${last}</span></span>
+        <span class="p"></span>
+        <span class="meter"><i></i></span>
+      </button>
+      <div class="arc-body">
+        <div class="grid"></div>
+        <div class="arc-actions"><button class="ghost" data-all>Marcar arco</button></div>
+      </div>`
+    const grid = el.querySelector('.grid')
+    const cells = arc.eps.map((e) => {
+      const b = document.createElement('button')
+      b.className = 'e ' + e.kind + (aired(e) ? '' : ' soon')
+      b.textContent = e.n
+      b.title = `Episódio ${e.n} · ${e.kind === 'canon' ? 'canon' : e.kind === 'mixed' ? 'misto' : 'filler'}${aired(e) ? '' : ' · estreia ' + e.airs.split('-').reverse().slice(0, 2).join('/')}`
+      b.dataset.id = e.id
+      grid.append(b)
+      return b
+    })
+    el.querySelector('.arc-head').onclick = () => {
+      const open = el.classList.toggle('open')
+      el.querySelector('.arc-head').setAttribute('aria-expanded', open)
     }
-
-    function loadCheckboxState(id) {
-      return localStorage.getItem(id) === 'true';
+    el.querySelector('[data-all]').onclick = () => {
+      const pick = arc.eps.filter((e) => inMode(e) && aired(e))
+      const allOn = pick.every((e) => seen.has(e.id))
+      change(pick.map((e) => e.id), !allOn, `${arc.name}: ${allOn ? 'desmarcado' : 'marcado'}`)
     }
+    views.set(arc, { el, cells })
+    sec.append(el)
+  })
+  list.append(sec)
+})
 
-    function updateProgress() {
-      document.querySelectorAll('.arc').forEach(arcDiv => {
-        const checkboxes = arcDiv.querySelectorAll('input[type="checkbox"]');
-        const nonSkipped = arcDiv.querySelectorAll('input[type="checkbox"]:not(.pulado)');
-        const checked = arcDiv.querySelectorAll('input[type="checkbox"]:checked:not(.pulado)');
-        const allSkipped = Array.from(checkboxes).every(c => c.disabled);
-        const progressEl = arcDiv.querySelector('.progress');
+// clique marca/desmarca; Shift+clique marca tudo até ali
+list.addEventListener('click', (ev) => {
+  const b = ev.target.closest('.e')
+  if (!b) return
+  const idx = ALL.findIndex((e) => e.id === b.dataset.id)
+  if (ev.shiftKey) {
+    const ids = ALL.slice(0, idx + 1).filter((e) => inMode(e) && aired(e)).map((e) => e.id)
+    change(ids, true, `Tudo até o ${label(ALL[idx])} marcado`)
+  } else {
+    change([b.dataset.id], !seen.has(b.dataset.id))
+  }
+})
 
-        if (allSkipped) {
-          progressEl.style.width = '100%';
-          progressEl.classList.add('filler');
-          arcDiv.classList.add('completed');
-        } else {
-          const percentage = (checked.length / nonSkipped.length) * 100;
-          progressEl.style.width = `${percentage}%`;
-          progressEl.classList.remove('filler');
-          arcDiv.classList.toggle('completed', percentage === 100);
-        }
-      });
-    }
+let undo = null, toastTimer
+function change(ids, on, msg) {
+  const before = ids.filter((id) => seen.has(id))
+  ids.forEach((id) => on ? seen.add(id) : seen.delete(id))
+  save(); render()
+  if (!msg) return
+  undo = () => { ids.forEach((id) => seen.delete(id)); before.forEach((id) => seen.add(id)); save(); render() }
+  $('toast-msg').textContent = msg
+  $('toast').classList.add('show')
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => $('toast').classList.remove('show'), 5000)
+}
+$('toast-undo').onclick = () => { undo?.(); $('toast').classList.remove('show') }
 
-    function updateMarkAllButtonText(button, episodesDiv) {
-      const checkboxes = episodesDiv.querySelectorAll('input[type="checkbox"]:not(:disabled)');
-      const allChecked = Array.from(checkboxes).every(c => c.checked);
-      button.textContent = allChecked ? 'Desmarcar tudo' : 'Marcar tudo';
-    }
+function render() {
+  document.documentElement.dataset.theme = state.theme
+  document.querySelectorAll('.seg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.mode === state.mode))
 
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-      localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    }
+  const pool = ALL.filter(inMode)
+  const done = pool.filter((e) => seen.has(e.id)).length
+  const left = pool.filter((e) => !seen.has(e.id)).length
+  const pct = pool.length ? done / pool.length : 0
+  const C = 2 * Math.PI * 44
+  $('ring').style.strokeDasharray = C
+  $('ring').style.strokeDashoffset = C * (1 - pct)
+  $('pct').textContent = Math.floor(pct * 100) + '%'
+  $('s-seen').textContent = done
+  $('s-left').textContent = left
+  const mins = left * MIN
+  $('s-time').textContent = mins >= 60 ? `${Math.floor(mins / 60)}h${String(mins % 60).padStart(2, '0')}` : `${mins}min`
 
-    function loadTheme() {
-      if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-mode');
-      }
-    }
+  const next = pool.find((e) => !seen.has(e.id))
+  $('n-ep').textContent = next ? next.n : '完'
+  $('n-label').textContent = next ? (next.arc.saga === 'Bleach' ? 'Próximo episódio' : 'Próximo · Guerra Sangrenta') : 'Fim'
+  $('n-arc').textContent = next ? next.arc.name + (aired(next) ? '' : ' · ainda não saiu') : 'Você viu tudo deste modo.'
+  $('n-btn').disabled = !next || !aired(next)
+  $('n-btn').onclick = () => next && change([next.id], true, `Episódio ${label(next)} assistido`)
 
-    arcs.forEach(createArc);
-    loadTheme();
-    setInterval(updateProgress, 500);
-  </script>
+  for (const [arc, { el, cells }] of views) {
+    const mine = arc.eps.filter(inMode)
+    const d = mine.filter((e) => seen.has(e.id)).length
+    el.querySelector('.p').textContent = mine.length ? `${d}/${mine.length}` : 'pular'
+    el.querySelector('.meter i').style.width = mine.length ? (d / mine.length) * 100 + '%' : '0'
+    el.classList.toggle('done', mine.length > 0 && d === mine.length)
+    el.classList.toggle('skip', mine.length === 0)
+    cells.forEach((b, i) => {
+      b.setAttribute('aria-pressed', seen.has(arc.eps[i].id))
+      b.classList.toggle('hide', !inMode(arc.eps[i]))
+    })
+    const pick = mine.filter(aired)
+    el.querySelector('[data-all]').textContent = pick.length && pick.every((e) => seen.has(e.id)) ? 'Desmarcar arco' : 'Marcar arco'
+  }
+}
+
+document.querySelectorAll('.seg button').forEach((b) => b.onclick = () => { state.mode = b.dataset.mode; save(); render() })
+$('theme').onclick = () => { state.theme = state.theme === 'dark' ? 'light' : 'dark'; save(); render() }
+$('export').onclick = () => {
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(new Blob([JSON.stringify({ ...state, seen: [...seen] }, null, 1)], { type: 'application/json' }))
+  a.download = `bleach-progresso-${today}.json`
+  a.click()
+  URL.revokeObjectURL(a.href)
+}
+$('import').onclick = () => $('file').click()
+$('file').onchange = async () => {
+  try {
+    const data = JSON.parse(await $('file').files[0].text())
+    const valid = new Set(ALL.map((e) => e.id))
+    if (!Array.isArray(data.seen)) throw 0
+    const prev = [...seen]
+    seen.clear()
+    data.seen.map(String).filter((id) => valid.has(id)).forEach((id) => seen.add(id))
+    save(); render()
+    undo = () => { seen.clear(); prev.forEach((id) => seen.add(id)); save(); render() }
+    $('toast-msg').textContent = 'Backup restaurado'
+    $('toast').classList.add('show')
+  } catch { alert('Arquivo de backup inválido.') }
+  $('file').value = ''
+}
+
+// abre o arco do próximo episódio
+const first = ALL.filter(inMode).find((e) => !seen.has(e.id))
+if (first) views.get(first.arc).el.classList.add('open')
+render()
+</script>
 </body>
 </html>
